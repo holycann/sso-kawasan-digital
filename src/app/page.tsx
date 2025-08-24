@@ -22,6 +22,13 @@ export default function AuthPage() {
     searchParams.get("redirect_url") ||
     process.env.NEXT_PUBLIC_DEFAULT_REDIRECT_URL ||
     "https://www.kawasan.digital";
+
+  // Log redirect URL for debugging
+  useEffect(() => {
+    console.log('Redirect URL:', redirectUrl);
+    console.log('Search Params:', Object.fromEntries(searchParams.entries()));
+  }, [redirectUrl, searchParams]);
+
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       const authResult = await AuthService.getAuthToken(redirectUrl || "");

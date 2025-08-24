@@ -32,14 +32,14 @@ export class AuthService {
         }
       }
 
-      // Save access token to HTTP-only cookie
+      // Save access token to cookie
       if (data.session?.access_token) {
         const expiresIn = credentials.remember ? 1 : 1 / 24; // 1 day if remember, 1 hour otherwise
         Cookies.set("access_token", data.session.access_token, {
           expires: expiresIn,
-          httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
+          httpOnly: false,
         });
       }
 

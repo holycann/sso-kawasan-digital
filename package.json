@@ -1,13 +1,36 @@
 {
   "name": "sso-kawasan-digital",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "private": false,
+  "description": "A modern, secure Single Sign-On (SSO) platform with seamless authentication experiences",
+  "keywords": [
+    "sso",
+    "authentication",
+    "next.js",
+    "typescript",
+    "supabase",
+    "tailwind",
+    "react"
+  ],
+  "homepage": "https://github.com/Kawasan-Digital/sso-kawasan-digital#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kawasan-Digital/sso-kawasan-digital.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Kawasan Digital",
+    "email": "contact@kawasan.digital",
+    "url": "https://www.kawasan.digital"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "test": "echo 'No tests configured yet'",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -41,7 +64,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "husky": "^9.0.11",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Kawasan-Digital/sso-kawasan-digital/issues"
   }
 }

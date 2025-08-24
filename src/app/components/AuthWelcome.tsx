@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
-import Plasma from "@/components/Plasma";
 import Footer from "@/components/Footer";
+import { Plasma } from "@/components/Plasma";
 
 interface AuthWelcomeProps {
   isLogin: boolean;
@@ -53,6 +53,8 @@ export function AuthWelcome({ isLogin }: AuthWelcomeProps) {
             opacity={0.8}
             mouseInteractive={true}
           />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 px-8">
           <div className="absolute bottom-0 left-0 right-0 px-8">
             <Footer />
           </div>
