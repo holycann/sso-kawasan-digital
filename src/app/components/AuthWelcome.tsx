@@ -53,8 +53,6 @@ export function AuthWelcome({ isLogin }: AuthWelcomeProps) {
             opacity={0.8}
             mouseInteractive={true}
           />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 px-8">
           <div className="absolute bottom-0 left-0 right-0 px-8">
             <Footer />
           </div>
