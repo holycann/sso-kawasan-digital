@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Primary Colors */
+    --color-background: #0a0d1a;
+    --color-dark-navy: #1a1f2e;
+    --color-primary-blue: #4169e1;
+    --color-purple-accent: #8b5cf6;
+    --color-bright-blue: #3b82f6;
+
+    /* Text Colors */
+    --color-primary-text: #ffffff;
+    --color-secondary-text: #a0a8b8;
+    --color-muted-text: #6b7280;
+
+    /* Gradient Colors */
+    --color-purple-gradient-start: #8b5cf6;
+    --color-purple-gradient-end: #3b82f6;
+    --color-blue-gradient-start: #4169e1;
+    --color-blue-gradient-end: #1e40af;
+
+    /* Accent Colors */
+    --color-button-blue: #3b82f6;
+    --color-icon-blue: #60a5fa;
+    --color-highlight-purple: #a855f7;
+
+    /* UI Elements */
+    --color-card-background: #1e293b;
+    --color-border-subtle: #334155;
+    --color-overlay-dark: rgba(10, 13, 26, 0.8);
+
+    /* Theme Configuration */
+    --theme-style: modern_gradient;
+    --theme-palette: blue_purple_gradient;
+  }
+
+  /* Light mode (optional, as the design seems dark-focused) */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --color-background: #ffffff;
+      --color-primary-text: #000000;
+      --color-secondary-text: #333333;
+    }
+  }
+}
+
+@layer utilities {
+  @keyframes slideIn {
+    from {
+      transform: translateX(calc(100% + 1rem));
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes hide {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes swipeOut {
+    from {
+      transform: translateX(var(--radix-toast-swipe-end-x));
+    }
+    to {
+      transform: translateX(calc(100% + 1rem));
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.5s ease-out;
+  }
+
+  .animate-hide {
+    animation: hide 0.5s ease-in;
+  }
+
+  .animate-swipeOut {
+    animation: swipeOut 0.5s ease-out;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-background);
+  color: var(--color-primary-text);
   font-family: Arial, Helvetica, sans-serif;
 }
