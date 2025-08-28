@@ -23,27 +23,19 @@ export default function AuthPage() {
     process.env.NEXT_PUBLIC_DEFAULT_REDIRECT_URL ||
     "https://www.kawasan.digital";
 
-  // Log redirect URL for debugging
-  useEffect(() => {
-    console.log('Redirect URL:', redirectUrl);
-    console.log('Search Params:', Object.fromEntries(searchParams.entries()));
-  }, [redirectUrl, searchParams]);
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <Nothing>
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       const authResult = await AuthService.getAuthToken(redirectUrl || "");
 
-      if (
-        authResult.redirect_url &&
-        authResult.redirect_url !== `${redirectUrl}?token=null`
-      ) {
-        router.push(authResult.redirect_url);
+      if (authResult.data?.redirect_url) {
+        router.push(authResult.data?.redirect_url || redirectUrl);
         return;
       }
     };
 
     checkAuthAndRedirect();
-  }, [router, redirectUrl]);
+  }, []);
 
   useEffect(() => {
     if (

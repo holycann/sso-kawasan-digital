@@ -1,315 +1,187 @@
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <Nothing> */
-import { supabase } from "@/configs/supabase";
-import type { UserLoginRequest, UserRegistrationRequest } from "@/types/User";
+import { BaseApiService } from "@/services/baseApiService";
+import type {
+  AuthResponse,
+  UserLoginRequest,
+  UserRegistrationRequest,
+} from "@/types/Auth";
+import type { ApiResponse } from "@/types/ApiResponse";
 import Cookies from "js-cookie";
 
-/**
- * Authentication service for managing user authentication operations
- */
-export class AuthService {
-  /**
-   * Set cookie with common configuration
-   * @param name Cookie name
-   * @param value Cookie value
-   * @param expiresIn Expiration in days
-   */
-  private static setCookie(
-    name: string,
-    value: string,
-    expiresIn: number
-  ): void {
+export class AuthService extends BaseApiService {
+  private static setCookie(name: string, value: string, expiresAt: Date): void {
     Cookies.set(name, value, {
-      expires: expiresIn,
+      expires: expiresAt,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
   }
 
-  /**
-   * Remove authentication-related cookies
-   */
   private static clearAuthCookies(): void {
     Cookies.remove("access_token");
-    Cookies.remove("token_expires_at");
     Cookies.remove("remember_me");
   }
 
-  /**
-   * Handle authentication errors
-   * @param error Error object
-   * @param defaultMessage Default error message
-   * @returns Formatted error message
-   */
-  private static handleAuthError(
-    error: unknown,
-    defaultMessage: string
-  ): string {
-    return error instanceof Error ? error.message : defaultMessage;
-  }
-
-  /**
-   * Login with email and password
-   * @param credentials User login credentials
-   * @returns Promise resolving to authenticated user or null
-   */
   static async login(
     credentials: UserLoginRequest
-  ): Promise<{ redirect_url: string | null; message: string }> {
+  ): Promise<ApiResponse<AuthResponse>> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      });
+      const response = await BaseApiService.post<
+        UserLoginRequest,
+        AuthResponse
+      >("/auth/login", credentials);
 
-      if (error) {
-        switch (error.message) {
-          case "Invalid login credentials":
-            throw new Error("Email atau password salah");
-          case "Email not confirmed":
-            throw new Error("Silakan konfirmasi email Anda terlebih dahulu");
-          default:
-            throw new Error(error.message || "Terjadi kesalahan saat login");
-        }
+      if (!response.success) {
+        return {
+          success: false,
+          message: response.message || "Login gagal",
+          data: null,
+        };
       }
 
-      // Save access token to cookie
-      if (data.session?.access_token) {
-        const expiresIn = credentials.remember ? 1 : 1 / 24; // 1 day if remember, 1 hour otherwise
-        const tokenExpiresAt = new Date();
-        tokenExpiresAt.setHours(
-          tokenExpiresAt.getHours() + (credentials.remember ? 24 : 1)
-        );
+      const { access_token, expires_at } = response.data!;
+      const expiresAt = new Date(expires_at * 1000);
 
-        this.setCookie("access_token", data.session.access_token, expiresIn);
-        this.setCookie(
-          "token_expires_at",
-          tokenExpiresAt.toISOString(),
-          expiresIn
-        );
-        this.setCookie(
-          "remember_me",
-          credentials.remember ? "true" : "false",
-          expiresIn
-        );
-      }
+      this.setCookie("access_token", access_token, expiresAt);
+      this.setCookie(
+        "remember_me",
+        credentials.remember ? "true" : "false",
+        credentials.remember
+          ? new Date(expiresAt.getTime() + 24 * 60 * 60 * 1000)
+          : expiresAt
+      );
 
       return {
-        redirect_url:
-          credentials.redirect_url + `?token=${data.session?.access_token}`,
+        success: true,
         message: "Login berhasil",
+        data: {
+          access_token,
+          expires_at,
+          redirect_url: `${credentials.redirect_url}?token=${access_token}`,
+        },
       };
     } catch (error) {
-      const errorMessage = this.handleAuthError(
-        error,
-        "Terjadi kesalahan saat login"
-      );
-      throw new Error(errorMessage);
+      throw error;
     }
   }
 
-  /**
-   * Check if token is expired and needs refresh
-   * @returns boolean indicating if token is expired
-   */
-  static isTokenExpired(): boolean {
-    const tokenExpiresAt = Cookies.get("token_expires_at");
-    if (!tokenExpiresAt) return true;
-
-    const expirationDate = new Date(tokenExpiresAt);
-    return new Date() >= expirationDate;
-  }
-
-  /**
-   * Determine if auto-refresh is allowed based on remember me setting
-   * @returns boolean indicating if auto-refresh is allowed
-   */
-  static isAutoRefreshAllowed(): boolean {
-    const rememberMe = Cookies.get("remember_me");
-    return rememberMe === "true";
-  }
-
-  /**
-   * Register a new user
-   * @param registrationData User registration details
-   * @returns Promise resolving to registration message
-   */
   static async register(
     registrationData: UserRegistrationRequest
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const { error } = await supabase.auth.signUp({
-        email: registrationData.email,
-        password: registrationData.password,
-        options: {
-          data: {
-            full_name: registrationData.first_name,
-            last_name: registrationData.last_name,
-          },
-        },
-      });
+      const response = await BaseApiService.post<UserRegistrationRequest>(
+        "/auth/register",
+        registrationData
+      );
 
-      if (error) {
-        switch (error.message) {
-          case "User already exists":
-            throw new Error("Email sudah terdaftar");
-          case "Invalid email format":
-            throw new Error("Format email tidak valid");
-          default:
-            throw new Error(error.message || "Gagal melakukan registrasi");
-        }
+      if (!response.success) {
+        return {
+          success: false,
+          message: response.message || "Registrasi gagal",
+        };
       }
 
       return {
         success: true,
-        message: "Registrasi berhasil. Silakan login untuk melanjutkan.",
+        message: "Registrasi berhasil, cek email konfirmasi.",
       };
     } catch (error) {
-      const errorMessage = this.handleAuthError(
-        error,
-        "Gagal melakukan registrasi"
-      );
-      return {
-        success: false,
-        message: errorMessage,
-      };
+      throw error;
     }
   }
 
-  /**
-   * Logout user
-   */
   static async logout(): Promise<{ success: boolean; message: string }> {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw new Error(error.message || "Gagal logout");
-      }
-
-      // Remove access token and related cookies on logout
+      const response = await BaseApiService.post("/auth/logout");
       this.clearAuthCookies();
 
-      return {
-        success: true,
-        message: "Berhasil logout",
-      };
+      if (!response.success) {
+        return {
+          success: false,
+          message: response.message || "Logout gagal",
+        };
+      }
+
+      return { success: true, message: "Logout berhasil" };
     } catch (error) {
-      const errorMessage = this.handleAuthError(error, "Gagal logout");
-      return {
-        success: false,
-        message: errorMessage,
-      };
+      throw error;
     }
   }
 
-  /**
-   * Get current authentication token and redirect URI
-   * @returns Promise resolving to authentication token, message, and redirect URI
-   */
-  static async getAuthToken(redirect_url: string): Promise<{
-    message: string;
-    redirect_url?: string;
-  }> {
+  static async getAuthToken(
+    redirect_url: string
+  ): Promise<ApiResponse<AuthResponse>> {
     try {
-      // First try to get token from cookie
-      const cookieToken = Cookies.get("access_token");
+      let token = Cookies.get("access_token");
+      const remember = Cookies.get("remember_me") === "true";
 
-      // Check if token is expired and auto-refresh is allowed
-      if (cookieToken && this.isTokenExpired() && this.isAutoRefreshAllowed()) {
+      if (!token && remember) {
         const refreshResult = await this.refreshAuthToken();
-        if (refreshResult.success && refreshResult.token) {
-          return {
-            message: "Token diperbarui otomatis",
-            redirect_url: redirect_url + `?token=${refreshResult.token}`,
-          };
+        if (refreshResult.success && refreshResult.data?.access_token) {
+          token = refreshResult.data.access_token;
         }
       }
 
-      if (cookieToken)
-        return {
-          message: "Token didapatkan dari cookie",
-          redirect_url: redirect_url + `?token=${cookieToken}`,
-        };
+      if (!token && !remember) {
+        throw new Error("Silahkan login kembali");
+      }
 
-      // Fallback to Supabase session
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      if (token) {
+        return {
+          success: true,
+          message: "Token aktif",
+          data: {
+            access_token: token,
+            expires_at: 0,
+            redirect_url: `${redirect_url}?token=${token}`,
+          },
+        };
+      }
 
       return {
-        message: session?.access_token
-          ? "Token didapatkan dari sesi"
-          : "Tidak ada token tersedia",
-        redirect_url: redirect_url + `?token=null`,
+        success: false,
+        message: "Tidak ada token",
+        data: null,
       };
     } catch (error) {
-      console.error("Failed to get auth token:", error);
-      return {
-        message: "Gagal mendapatkan token",
-      };
+      throw error;
     }
   }
 
-  /**
-   * Refresh authentication token using Supabase
-   * @returns Promise resolving to new access token or null
-   */
-  static async refreshAuthToken(): Promise<{
-    success: boolean;
-    message: string;
-    token?: string;
-  }> {
+  static async refreshAuthToken(): Promise<ApiResponse<AuthResponse>> {
     try {
-      // Check if auto-refresh is allowed
-      if (!this.isAutoRefreshAllowed()) {
+      const response = await BaseApiService.post<void, AuthResponse>(
+        "/auth/refresh-token"
+      );
+
+      if (!response.success || !response.data?.access_token) {
         return {
           success: false,
-          message: "Auto refresh tidak diizinkan",
+          message: response.message || "Refresh gagal",
+          data: null,
         };
       }
 
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.refreshSession();
+      const { access_token, expires_at } = response.data!;
+      const expiresAt = new Date(expires_at * 1000);
 
-      if (error) {
-        console.error("Token refresh error:", error);
-        return {
-          success: false,
-          message: error.message || "Failed to refresh token",
-        };
-      }
-
-      if (session?.access_token) {
-        // Update cookie with new token
-        const expiresIn = 1; // 1 day for remember me
-        const tokenExpiresAt = new Date();
-        tokenExpiresAt.setHours(tokenExpiresAt.getHours() + 24);
-
-        this.setCookie("access_token", session.access_token, expiresIn);
-        this.setCookie(
-          "token_expires_at",
-          tokenExpiresAt.toISOString(),
-          expiresIn
-        );
-
-        return {
-          success: true,
-          message: "Token berhasil diperbarui",
-          token: session.access_token,
-        };
-      }
+      this.setCookie("access_token", access_token, expiresAt);
+      this.setCookie(
+        "remember_me",
+        "true",
+        new Date(expiresAt.getTime() + 24 * 60 * 60 * 1000)
+      );
 
       return {
-        success: false,
-        message: "No new session available",
+        success: true,
+        message: "Token diperbarui",
+        data: {
+          access_token: access_token,
+          expires_at: expires_at,
+        },
       };
     } catch (error) {
-      console.error("Unexpected error during token refresh:", error);
-      return {
-        success: false,
-        message: this.handleAuthError(error, "Token refresh failed"),
-      };
+      throw error;
     }
   }
 }

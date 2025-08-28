@@ -15,7 +15,8 @@ export class BaseApiService {
     // Initialize axios if not already initialized
     if (!this.axiosInstance) {
       this.axiosInstance = axios.create({
-        baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:8181",
+        baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
+        withCredentials: true,
         timeout: 15000,
         headers: {
           "Content-Type": "application/json",

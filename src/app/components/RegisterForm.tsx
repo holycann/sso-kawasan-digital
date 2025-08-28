@@ -8,7 +8,7 @@ import { FaCheckSquare, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useToastContext } from "@/providers/toast-provider";
 import { validate, validators, hasErrors } from "@/lib/validation";
 import { AuthService } from "@/services/authService";
-import type { UserRegistrationRequest } from "@/types/User";
+import type { UserRegistrationRequest } from "@/types/Auth";
 
 interface RegisterFormProps {
   onToggleForm: () => void;
@@ -19,11 +19,12 @@ export function RegisterForm({ onToggleForm, setIsLogin }: RegisterFormProps) {
   const [values, setValues] = useState<
     UserRegistrationRequest & { confirm_password?: string }
   >({
-    first_name: "",
-    last_name: "",
+    username: "",
+    fullname: "",
     email: "",
     password: "",
     phone: "",
+    address: "",
     confirm_password: "",
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -33,13 +34,13 @@ export function RegisterForm({ onToggleForm, setIsLogin }: RegisterFormProps) {
   const { toast } = useToastContext();
 
   const registrationRules = {
-    first_name: [
-      validators.required("First name is required"),
-      validators.min(2, "First name must be at least 2 characters"),
+    username: [
+      validators.required("Username is required"),
+      validators.min(2, "Username must be at least 2 characters"),
     ],
-    last_name: [
-      validators.required("Last name is required"),
-      validators.min(2, "Last name must be at least 2 characters"),
+    fullname: [
+      validators.required("Full name is required"),
+      validators.min(2, "Full name must be at least 2 characters"),
     ],
     email: [
       validators.required("Email is required"),
@@ -169,60 +170,59 @@ export function RegisterForm({ onToggleForm, setIsLogin }: RegisterFormProps) {
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-5">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="sm:col-span-1">
-                <label
-                  htmlFor="first_name"
-                  className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
-                >
-                  First Name <span className="text-error-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="first_name"
-                    name="first_name"
-                    placeholder="Enter your first name"
-                    value={values.first_name}
-                    onChange={handleChange}
-                    required
-                    className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20 ${
-                      errors.first_name ? "border-error-500" : ""
-                    }`}
-                  />
-                  {errors.first_name && (
-                    <p className="text-error-500 text-xs mt-1">
-                      {errors.first_name}
-                    </p>
-                  )}
-                </div>
+            <div>
+              <label
+                htmlFor="username"
+                className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
+              >
+                Username <span className="text-error-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  placeholder="Enter your username"
+                  value={values.username}
+                  onChange={handleChange}
+                  required
+                  className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20 ${
+                    errors.username ? "border-error-500" : ""
+                  }`}
+                />
+                {errors.username && (
+                  <p className="text-error-500 text-xs mt-1">
+                    {errors.username}
+                  </p>
+                )}
               </div>
-              <div className="sm:col-span-1">
-                <label
-                  htmlFor="last_name"
-                  className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
-                >
-                  Last Name <span className="text-error-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="last_name"
-                    name="last_name"
-                    placeholder="Enter your last name"
-                    value={values.last_name}
-                    onChange={handleChange}
-                    required
-                    className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20 ${
-                      errors.last_name ? "border-error-500" : ""
-                    }`}
-                  />
-                  {errors.last_name && (
-                    <p className="text-error-500 text-xs mt-1">
-                      {errors.last_name}
-                    </p>
-                  )}
-                </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="fullname"
+                className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
+              >
+                Full Name <span className="text-error-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="fullname"
+                  name="fullname"
+                  placeholder="Enter your full name"
+                  value={values.fullname}
+                  onChange={handleChange}
+                  required
+                  className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20 ${
+                    errors.fullname ? "border-error-500" : ""
+                  }`}
+                />
+                {errors.fullname && (
+                  <p className="text-error-500 text-xs mt-1">
+                    {errors.fullname}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -251,6 +251,46 @@ export function RegisterForm({ onToggleForm, setIsLogin }: RegisterFormProps) {
                 )}
               </div>
             </div>
+
+            {/* <div>
+              <label
+                htmlFor="phone"
+                className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
+              >
+                Phone (Optional)
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="Enter your phone number"
+                  value={values.phone}
+                  onChange={handleChange}
+                  className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20`}
+                />
+              </div>
+            </div> */}
+
+            {/* <div>
+              <label
+                htmlFor="address"
+                className="mb-1.5 block text-sm font-medium text-[var(--color-secondary-text)]"
+              >
+                Address (Optional)
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  placeholder="Enter your address"
+                  value={values.address}
+                  onChange={handleChange}
+                  className={`h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-[var(--color-muted-text)] focus:outline-hidden focus:ring-3 bg-transparent text-[var(--color-primary-text)] border-[var(--color-border-subtle)] focus:border-[var(--color-primary-blue)] focus:ring-[var(--color-primary-blue)]/20`}
+                />
+              </div>
+            </div> */}
 
             <div>
               <label

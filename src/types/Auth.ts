@@ -1,9 +1,10 @@
 export interface UserRegistrationRequest {
-  first_name: string;
-  last_name: string;
   email: string;
-  password: string;
+  username: string;
+  fullname: string;
   phone?: string;
+  address?: string;
+  password: string;
 }
 
 export interface UserLoginRequest {
@@ -11,4 +12,10 @@ export interface UserLoginRequest {
   password: string;
   remember?: boolean;
   redirect_url: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  expires_at: number;
+  redirect_url?: string;
 }

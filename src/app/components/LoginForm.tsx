@@ -5,7 +5,7 @@ import { SocialLoginButtons } from "./SocialLoginButtons";
 import { FaCheckSquare, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useToastContext } from "@/providers/toast-provider";
 import { validate, validators, hasErrors } from "@/lib/validation";
-import type { UserLoginRequest } from "@/types/User";
+import type { UserLoginRequest } from "@/types/Auth";
 import { AuthService } from "@/services/authService";
 import { useRouter } from "next/navigation";
 
@@ -68,8 +68,8 @@ export function LoginForm({ redirectUrl }: { redirectUrl: string }) {
       });
 
       // Redirect to the specified URL or dashboard
-      if (result.redirect_url) {
-        router.push(result.redirect_url);
+      if (result.data?.redirect_url) {
+        router.push(result.data.redirect_url);
       }
     } catch (error) {
       toast({
